@@ -1,0 +1,1 @@
+Error:2022/11/03 14:26:03 log_test.go:9: Something has failed
