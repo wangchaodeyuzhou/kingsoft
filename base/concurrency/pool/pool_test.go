@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -65,4 +66,43 @@ func performQueries(query int, p *pool) {
 
 	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	fmt.Printf("QID[%d] CID[%d]\n", query, conn.(*dbConnection).ID)
+}
+
+var (
+	pooll *sync.Pool
+)
+
+type Person struct {
+	Name string
+}
+
+func initPool() {
+	pooll = &sync.Pool{
+		New: func() any {
+			return new(Person)
+		},
+	}
+}
+
+func TestSyncPool(t *testing.T) {
+	initPool()
+
+	startTime := time.Now()
+	for i := 0; i < 10000; i++ {
+		one := pooll.Get().(*Person)
+		one.Name = "girl" + strconv.Itoa(i)
+		pooll.Put(one)
+	}
+
+	fmt.Println(time.Since(startTime))
+
+	fmt.Println("=========")
+	startTime = time.Now()
+	for i := 0; i < 10000; i++ {
+		// 耗时创建这个结构体对象这里
+		p := Person{Name: "Girl" + strconv.Itoa(i)}
+		pooll.Put(p)
+	}
+
+	fmt.Println(time.Since(startTime))
 }
