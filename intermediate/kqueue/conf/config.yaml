@@ -1,0 +1,14 @@
+services:
+  workers:
+    - workerId: "worker1"
+      node:
+        - id: "face-1"
+          url: "http://10.228.23.83:3513"
+
+        - id: "face-2"
+          url: "http://localhost:8000"
+
+    - workerId: "worker2"
+      node:
+        - id: "draw-1"
+          url: "http://10.228.23.122:3515"
