@@ -7,18 +7,19 @@ import (
 	"git.kingsoft.go/intermediate/kqueue/task"
 	"git.kingsoft.go/intermediate/kqueue/util"
 	"golang.org/x/exp/slog"
+	"time"
 )
 
 // Worker 的职责是监听队列，并从队列中获取工作单元，执行工作单元的具体处理逻辑（简称 customer/worker）// 采用单队列-单消费者
 type Worker struct {
-	workerId string
+	WorkerId string
 	// 设计对应的 queue 模型
 	Q queue.Queue
 }
 
 func NewWorker(workerId string, q queue.Queue) *Worker {
 	return &Worker{
-		workerId: workerId,
+		WorkerId: workerId,
 		Q:        q,
 	}
 }
@@ -55,7 +56,7 @@ func (w *Worker) startFIFOWorker() {
 				}
 
 				t.UpdateStatus(util.Completed)
-				slog.Info("queue task have completed", "nodeId", w.workerId, "taskId", t.TaskId, "status", t.Status)
+				slog.Info("queue task have completed", "nodeId", w.WorkerId, "taskId", t.TaskId, "status", t.Status)
 			}
 		}
 	}()
@@ -84,7 +85,7 @@ func (w *Worker) startPriorityQueue() {
 				}
 
 				t.UpdateStatus(util.Completed)
-				slog.Info("queue task have completed", "nodeId", w.workerId, "taskId", t.TaskId, "status", t.Status)
+				slog.Info("queue task have completed", "nodeId", w.WorkerId, "taskId", t.TaskId, "status", t.Status)
 			}
 		}
 	}()
@@ -93,7 +94,8 @@ func (w *Worker) startPriorityQueue() {
 // 处理任务(消费任务)
 func (w *Worker) processTask(task *task.Task) {
 	task.UpdateStatus(util.Processing)
-	slog.Info("handle you real task", "nodeId", w.workerId, "taskId", task.TaskId, "status", task.Status, "payload", task.Payload)
+	time.Sleep(2 * time.Second) // 模拟处理过程
+	slog.Info("handle you real task", "nodeId", w.WorkerId, "taskId", task.TaskId, "status", task.Status, "payload", task.Payload)
 }
 
 func (w *Worker) GetQueueLen() int {

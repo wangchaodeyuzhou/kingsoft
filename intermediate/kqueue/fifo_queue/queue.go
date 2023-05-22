@@ -117,3 +117,7 @@ func (f *FIFOQueue) GetTaskInfo(taskId string) (*task.Task, int, time.Duration, 
 	slog.Error("task not exist", "taskId", taskId)
 	return nil, -1, 0, util.ErrTaskNotInQueue
 }
+
+func (f *FIFOQueue) GetTasks() []*task.Task {
+	return f.tasks
+}

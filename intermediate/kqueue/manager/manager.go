@@ -14,16 +14,22 @@ import (
 )
 
 type Manager struct {
-	workers map[string][]*worker.Worker
+	Workers     map[string][]*worker.Worker
+	index       int
+	workerTypes []string
 }
+
+var Mgr *Manager
 
 func NewWorkerManager() *Manager {
 	m := &Manager{
-		workers: make(map[string][]*worker.Worker),
+		Workers:     make(map[string][]*worker.Worker),
+		index:       0,
+		workerTypes: make([]string, 0),
 	}
 
-	// load services to workers
-	for workerId, workerNodes := range conf.GetConfigServices() {
+	// load services to Workers
+	for workerType, workerNodes := range conf.GetConfigServices() {
 		for _, node := range workerNodes {
 			// todo 不同类型的队列表示
 			// fifo 队列
@@ -31,8 +37,10 @@ func NewWorkerManager() *Manager {
 
 			// 优先级队列
 			q := priority_queue.NewPriorityQueue(util.MaxQueueCapacity)
-			m.workers[workerId] = append(m.workers[workerId], worker.NewWorker(node.Id, q))
+			m.Workers[workerType] = append(m.Workers[workerType], worker.NewWorker(node.Id, q))
 		}
+
+		m.workerTypes = append(m.workerTypes, workerType)
 	}
 
 	return m
@@ -41,7 +49,7 @@ func NewWorkerManager() *Manager {
 func (m *Manager) Run() {
 	slog.Debug("manager start to run")
 
-	for _, workers := range m.workers {
+	for _, workers := range m.Workers {
 		for _, w := range workers {
 			w.StartWorker()
 		}
@@ -57,7 +65,7 @@ func (m *Manager) CommitTask(task *task.Task, workerId string) (int, time.Durati
 		return -1, 0, errors.New("find queue least fail")
 	}
 
-	w := m.workers[workerId][leastIndex]
+	w := m.Workers[workerId][leastIndex]
 	rank, waitTime, err := w.Q.EnQueue(task)
 	if err != nil {
 		return -1, 0, errors.New("enter queue have fail")
@@ -71,7 +79,7 @@ func (m *Manager) CommitTask(task *task.Task, workerId string) (int, time.Durati
 func (m *Manager) CancelTask(taskId, workerId string) error {
 	slog.Debug("manage cancel task", "workerId", workerId, "taskId", taskId)
 
-	workers, ok := m.workers[workerId]
+	workers, ok := m.Workers[workerId]
 	if !ok {
 		slog.Error("workerId is not exist", "workerId", workerId)
 		return errors.New(fmt.Sprintf("workerId %s not is exist", workerId))
@@ -87,6 +95,7 @@ func (m *Manager) CancelTask(taskId, workerId string) error {
 					slog.Error("cancel task have fail", "taskId", taskId, "err", err)
 					return err
 				} else {
+					taskInfo.UpdateStatus(util.Cancel)
 					slog.Info("manager cancel task success", "workerId", workerId, "taskId", taskId, "status",
 						taskInfo.Status)
 					return nil
@@ -100,7 +109,7 @@ func (m *Manager) CancelTask(taskId, workerId string) error {
 }
 
 func (m *Manager) findLenLeast(workerId string) (int, error) {
-	workers, ok := m.workers[workerId]
+	workers, ok := m.Workers[workerId]
 	if !ok {
 		slog.Error("workerId is not exist", "workerId", workerId)
 		return -1, errors.New(fmt.Sprintf("workerId %s not is exist", workerId))
@@ -115,4 +124,11 @@ func (m *Manager) findLenLeast(workerId string) (int, error) {
 	}
 
 	return index, nil
+}
+
+// RobinNext 轮询
+func (m *Manager) RobinNext() string {
+	workerType := m.workerTypes[m.index]
+	m.index = (m.index + 1) % len(m.workerTypes)
+	return workerType
 }

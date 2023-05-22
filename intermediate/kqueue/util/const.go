@@ -19,4 +19,6 @@ const (
 	Queued     TaskStatus = iota // 排队中
 	Processing                   // 处理中
 	Completed                    // 已完成
+	Cancel                       // 取消
+	Failed                       // 失败
 )

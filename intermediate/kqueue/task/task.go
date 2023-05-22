@@ -4,10 +4,10 @@ import "git.kingsoft.go/intermediate/kqueue/util"
 
 // Task 工作单元
 type Task struct {
-	TaskId   string          // task 任务的唯一标识
-	Status   util.TaskStatus // 任务的状态
-	Payload  any             // 任务携带的信息
-	Priority int             // 非负正整数 任务的优先级 越小的话优先级越高
+	TaskId   string          `json:"task_id"`  // task 任务的唯一标识
+	Status   util.TaskStatus `json:"status"`   // 任务的状态
+	Payload  any             `json:"payload"`  // 任务携带的信息
+	Priority int             `json:"priority"` // 非负正整数 任务的优先级 越小的话优先级越高
 }
 
 func NewTask(taskId string, payload any, priority ...int) *Task {

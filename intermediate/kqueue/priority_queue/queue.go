@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"git.kingsoft.go/intermediate/kqueue/task"
 	"git.kingsoft.go/intermediate/kqueue/util"
+	"golang.org/x/exp/slog"
 	"sort"
 	"sync"
 	"time"
@@ -46,6 +47,9 @@ func (p *PriorityQueue) EnQueue(task *task.Task) (int, time.Duration, error) {
 		return -1, 0, util.ErrPriorityQueueFull
 	}
 
+	if idx > len(p.TaskQueues)-1 {
+		slog.Info("panic err", "idx", idx, "len", len(p.TaskQueues)-1, "ok", ok)
+	}
 	taskQueues := p.TaskQueues[idx]
 	taskQueues.Tasks.PushBack(task)
 
@@ -72,20 +76,17 @@ func (p *PriorityQueue) addTaskQueues(priority int) int {
 		return priority < p.TaskQueues[i].Priority
 	})
 
-	// 第一次
-	if pos == n && pos == 0 {
-		p.PriorityIdx[priority] = pos
-	}
-
 	// 更新映射表中优先级和切片索引的对应关系
 	for i := pos; i < n; i++ {
-		p.PriorityIdx[p.TaskQueues[i].Priority] = i
+		p.PriorityIdx[p.TaskQueues[i].Priority] = i + 1
 	}
+
+	p.PriorityIdx[priority] = pos
 
 	tail := make([]*taskQueue, n-pos)
 	copy(tail, p.TaskQueues[pos:])
 
-	p.TaskQueues = append(p.TaskQueues[:pos], &taskQueue{Tasks: list.New(), Priority: priority})
+	p.TaskQueues = append(p.TaskQueues[0:pos], &taskQueue{Tasks: list.New(), Priority: priority})
 	p.TaskQueues = append(p.TaskQueues, tail...)
 
 	return pos
@@ -96,7 +97,7 @@ func (p *PriorityQueue) DeQueue() (*task.Task, error) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
-	for _, queue := range p.TaskQueues {
+	for index, queue := range p.TaskQueues {
 		if queue.Tasks.Len() > 0 {
 			taskElement := queue.Tasks.Front()
 			queue.Tasks.Remove(taskElement)
@@ -104,11 +105,24 @@ func (p *PriorityQueue) DeQueue() (*task.Task, error) {
 			// 如何当前队列为空, 删除该映射
 			if queue.Tasks.Len() == 0 {
 				queue.Tasks.Init()
+				if index == len(p.TaskQueues)-1 {
+					p.TaskQueues = p.TaskQueues[:index]
+				} else {
+					p.TaskQueues = append(p.TaskQueues[:index], p.TaskQueues[index+1:]...)
+				}
 				delete(p.PriorityIdx, queue.Priority)
+				// 第一个优先级最先移除,后面的需要更新
+				for k := range p.PriorityIdx {
+					p.PriorityIdx[k]--
+				}
 			}
 
 			return taskElement.Value.(*task.Task), nil
 		}
+	}
+
+	for i, queue := range p.TaskQueues {
+		slog.Info("de queue", "i", i, "queue", queue)
 	}
 
 	return nil, util.ErrPriorityQueueEmpty

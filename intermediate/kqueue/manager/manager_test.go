@@ -1,11 +1,13 @@
 package manager
 
 import (
+	"fmt"
 	"git.kingsoft.go/intermediate/kqueue/conf"
 	"git.kingsoft.go/intermediate/kqueue/task"
 	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slog"
+	"sort"
 	"testing"
 )
 
@@ -73,4 +75,19 @@ func TestPriorityQueue(t *testing.T) {
 	err := workerManager.CancelTask("wrc990", "worker2")
 	assert.NoError(t, err)
 
+}
+
+func TestSearchSort(t *testing.T) {
+	a := []int{2, 3, 5, 7}
+	p := 1
+	search := sort.Search(len(a), func(i int) bool {
+		return p < a[i]
+	})
+	fmt.Println(search)
+	tail := make([]int, len(a)-search)
+	copy(tail, a[search:])
+
+	a = append(a[0:search], p)
+	a = append(a, tail...)
+	fmt.Println(a)
 }

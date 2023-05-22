@@ -8,7 +8,7 @@ import (
 )
 
 func LoadConfig() (*Bootstrap, error) {
-	path := flag.String("config", "../conf/config.yaml", "the config file path")
+	path := flag.String("config", "./kqueue/conf/config.yaml", "the config file path")
 	flag.Parse()
 	c, err := config.New(*path, func() any {
 		return DefaultConfig()
