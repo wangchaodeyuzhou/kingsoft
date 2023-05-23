@@ -5,6 +5,7 @@ import (
 	"git.kingsoft.go/intermediate/kqueue/api"
 	"git.kingsoft.go/intermediate/kqueue/manager"
 	"git.kingsoft.go/intermediate/kqueue/request"
+	"git.kingsoft.go/intermediate/kqueue/util"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"golang.org/x/exp/slog"
@@ -52,8 +53,10 @@ func (ws *WebSocketServer) Start() {
 		ws.handleWebSocket(c)
 	})
 
+	router.Use(util.Cors())
 	// 提交任务
 	router.POST("/commit", api.CommitTaskToQueue)
+	router.POST("/cancel", api.CancelTaskToQueue)
 
 	if err := router.Run(":13000"); err != nil {
 		slog.Error("websocket start fail", "err", err)

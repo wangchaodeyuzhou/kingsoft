@@ -3,6 +3,7 @@ package fifo_queue
 import (
 	"errors"
 	"fmt"
+	"git.kingsoft.go/intermediate/kqueue/queue"
 	"golang.org/x/exp/slog"
 	"sync"
 	"time"
@@ -17,13 +18,17 @@ type FIFOQueue struct {
 	lock       sync.RWMutex
 	capacity   int           // 队列容量
 	noticeChan chan struct{} // 信道的事件通知方式
+
+	// 处理过的任务
+	HandledTasks *queue.HandleAllTasks
 }
 
 func NewFIFOQueue(capacity int) *FIFOQueue {
 	return &FIFOQueue{
-		tasks:      make([]*task.Task, 0, capacity),
-		capacity:   capacity,
-		noticeChan: make(chan struct{}, capacity),
+		tasks:        make([]*task.Task, 0, capacity),
+		capacity:     capacity,
+		noticeChan:   make(chan struct{}, capacity),
+		HandledTasks: queue.NewHandleAllTasks(capacity),
 	}
 }
 

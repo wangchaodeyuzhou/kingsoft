@@ -34,8 +34,8 @@ func realMain() (exitCode int) {
 	go manager.Mgr.Run()
 
 	up := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+		ReadBufferSize:  1024 * 10,
+		WriteBufferSize: 1024 * 10,
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},

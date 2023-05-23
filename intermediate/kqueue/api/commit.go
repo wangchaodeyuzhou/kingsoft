@@ -22,7 +22,17 @@ func CommitTaskToQueue(c *gin.Context) {
 	taskId := strconv.FormatUint(nextID, 10)
 
 	workerType := manager.Mgr.RobinNext()
-	t := task.NewTask(taskId, "wrc-"+taskId, rand.Intn(10)+1)
+
+	var t *task.Task
+	header := c.GetHeader("Queue")
+	if header == "FIFO" {
+		// fifo
+		t = task.NewTask(taskId, "wrc-fifo-"+taskId)
+	} else {
+		// priority-queue
+		t = task.NewTask(taskId, "wrc-"+taskId, rand.Intn(10)+1)
+	}
+
 	// 轮询去提交到不同的业务组
 	rank, waitTime, err := manager.Mgr.CommitTask(t, workerType)
 	if err != nil {

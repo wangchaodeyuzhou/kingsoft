@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"git.kingsoft.go/intermediate/kqueue/conf"
+	"git.kingsoft.go/intermediate/kqueue/fifo_queue"
 	"git.kingsoft.go/intermediate/kqueue/priority_queue"
 	"git.kingsoft.go/intermediate/kqueue/task"
 	"git.kingsoft.go/intermediate/kqueue/util"
@@ -33,10 +34,10 @@ func NewWorkerManager() *Manager {
 		for _, node := range workerNodes {
 			// todo 不同类型的队列表示
 			// fifo 队列
-			// q := fifo_queue.NewFIFOQueue(util.MaxQueueCapacity)
+			q := fifo_queue.NewFIFOQueue(util.MaxQueueCapacity)
 
 			// 优先级队列
-			q := priority_queue.NewPriorityQueue(util.MaxQueueCapacity)
+			// q := priority_queue.NewPriorityQueue(util.MaxQueueCapacity)
 			m.Workers[workerType] = append(m.Workers[workerType], worker.NewWorker(node.Id, q))
 		}
 
@@ -98,6 +99,17 @@ func (m *Manager) CancelTask(taskId, workerId string) error {
 					taskInfo.UpdateStatus(util.Cancel)
 					slog.Info("manager cancel task success", "workerId", workerId, "taskId", taskId, "status",
 						taskInfo.Status)
+
+					// handleTasks
+					switch w.Q.(type) {
+					case *fifo_queue.FIFOQueue:
+						q := w.Q.(*fifo_queue.FIFOQueue)
+						q.HandledTasks.Cancel = append(q.HandledTasks.Cancel, taskInfo)
+					case *priority_queue.PriorityQueue:
+						q := w.Q.(*priority_queue.PriorityQueue)
+						q.HandledTasks.Cancel = append(q.HandledTasks.Cancel, taskInfo)
+					}
+
 					return nil
 				}
 			}

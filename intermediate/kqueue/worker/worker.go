@@ -51,12 +51,17 @@ func (w *Worker) startFIFOWorker() {
 
 				t, err := q.DeQueue()
 				if err != nil {
+					// 处理失败
+					q.HandledTasks.Failed = append(q.HandledTasks.Failed, t)
 					slog.Error("queue dequeue fail", "taskId", t.TaskId)
 					continue
 				}
 
 				t.UpdateStatus(util.Completed)
 				slog.Info("queue task have completed", "nodeId", w.WorkerId, "taskId", t.TaskId, "status", t.Status)
+
+				// 处理成功
+				q.HandledTasks.Success = append(q.HandledTasks.Success, t)
 			}
 		}
 	}()
@@ -70,7 +75,11 @@ func (w *Worker) startPriorityQueue() {
 			select {
 			case <-q.NoticeQueue():
 				peek, err := q.DeQueue()
-				if err != nil {
+				if peek == nil {
+					continue
+				}
+
+				if err != nil && peek != nil {
 					// 处理失败
 					q.HandledTasks.Failed = append(q.HandledTasks.Failed, peek)
 					slog.Error("queue dequeue fail", "taskId", peek.TaskId)

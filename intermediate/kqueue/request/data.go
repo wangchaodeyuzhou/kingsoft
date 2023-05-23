@@ -28,7 +28,6 @@ type FIFOQueue struct {
 type PriorityQueue struct {
 	Type             string            `json:"type"`
 	PriorityTasks    [][]*task.Task    `json:"priority_tasks"`
-	IdxPriority      map[int]int       `json:"idx_priority"`
 	OtherTasksStatus *OtherTasksStatus `json:"other_tasks_status"`
 }
 
@@ -38,14 +37,21 @@ type OtherTasksStatus struct {
 	Cancel  []*task.Task `json:"cancel"`
 }
 
+type CancelRequest struct {
+	TaskId   string `json:"task_id"`
+	WorkerId string `json:"worker_id"`
+}
+
 func convertTasks(q queue.Queue) (any, error) {
 	var result any
 	switch q.(type) {
 	case *fifo_queue.FIFOQueue:
-		tasks := q.(*fifo_queue.FIFOQueue).GetTasks()
+		fifoQueue := q.(*fifo_queue.FIFOQueue)
+		tasks := fifoQueue.GetTasks()
 		result = &FIFOQueue{
-			Type:  "FIFO",
-			Tasks: tasks,
+			Type:             "FIFO",
+			Tasks:            tasks,
+			OtherTasksStatus: convertHandleTasks(fifoQueue.HandledTasks),
 		}
 	case *priority_queue.PriorityQueue:
 		priorityQueue := q.(*priority_queue.PriorityQueue)
@@ -62,7 +68,6 @@ func convertTasks(q queue.Queue) (any, error) {
 			Type:             "Priority",
 			PriorityTasks:    tmpData,
 			OtherTasksStatus: convertHandleTasks(priorityQueue.HandledTasks),
-			IdxPriority:      convertIdxPriority(priorityQueue.PriorityIdx),
 		}
 
 	default:
@@ -72,15 +77,7 @@ func convertTasks(q queue.Queue) (any, error) {
 	return result, nil
 }
 
-func convertIdxPriority(p map[int]int) map[int]int {
-	result := make(map[int]int, len(p))
-	for k, v := range p {
-		result[v] = k
-	}
-	return result
-}
-
-func convertHandleTasks(handleTasks *priority_queue.HandleAllTasks) *OtherTasksStatus {
+func convertHandleTasks(handleTasks *queue.HandleAllTasks) *OtherTasksStatus {
 	return &OtherTasksStatus{
 		Success: handleTasks.Success,
 		Failed:  handleTasks.Failed,

@@ -2,6 +2,7 @@ package priority_queue
 
 import (
 	"container/list"
+	"git.kingsoft.go/intermediate/kqueue/queue"
 	"git.kingsoft.go/intermediate/kqueue/task"
 	"git.kingsoft.go/intermediate/kqueue/util"
 	"sort"
@@ -17,26 +18,12 @@ type PriorityQueue struct {
 	noticeChan  chan struct{} // 信道的事件通知方式
 
 	// 处理过的任务
-	HandledTasks *HandleAllTasks
+	HandledTasks *queue.HandleAllTasks
 }
 
 type taskQueue struct {
 	Priority int        // 该队列的优先级
 	Tasks    *list.List // 双向链表更加灵活 或者 []*task.Task
-}
-
-type HandleAllTasks struct {
-	Success []*task.Task
-	Failed  []*task.Task
-	Cancel  []*task.Task
-}
-
-func newHandleAllTasks(capacity int) *HandleAllTasks {
-	return &HandleAllTasks{
-		Success: make([]*task.Task, 0, capacity),
-		Failed:  make([]*task.Task, 0, capacity),
-		Cancel:  make([]*task.Task, 0, capacity),
-	}
 }
 
 func NewPriorityQueue(capacity int) *PriorityQueue {
@@ -45,7 +32,7 @@ func NewPriorityQueue(capacity int) *PriorityQueue {
 		TaskQueues:   make([]*taskQueue, 0, capacity),
 		PriorityIdx:  make(map[int]int, capacity),
 		noticeChan:   make(chan struct{}, capacity),
-		HandledTasks: newHandleAllTasks(capacity),
+		HandledTasks: queue.NewHandleAllTasks(capacity),
 	}
 }
 
