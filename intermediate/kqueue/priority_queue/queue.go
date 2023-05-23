@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"git.kingsoft.go/intermediate/kqueue/task"
 	"git.kingsoft.go/intermediate/kqueue/util"
-	"golang.org/x/exp/slog"
 	"sort"
 	"sync"
 	"time"
@@ -16,6 +15,9 @@ type PriorityQueue struct {
 	capacity    int           // 优先级队列的容量
 	PriorityIdx map[int]int   // 优先级索引映射 <priority,index>
 	noticeChan  chan struct{} // 信道的事件通知方式
+
+	// 处理过的任务
+	HandledTasks *HandleAllTasks
 }
 
 type taskQueue struct {
@@ -23,12 +25,27 @@ type taskQueue struct {
 	Tasks    *list.List // 双向链表更加灵活 或者 []*task.Task
 }
 
+type HandleAllTasks struct {
+	Success []*task.Task
+	Failed  []*task.Task
+	Cancel  []*task.Task
+}
+
+func newHandleAllTasks(capacity int) *HandleAllTasks {
+	return &HandleAllTasks{
+		Success: make([]*task.Task, 0, capacity),
+		Failed:  make([]*task.Task, 0, capacity),
+		Cancel:  make([]*task.Task, 0, capacity),
+	}
+}
+
 func NewPriorityQueue(capacity int) *PriorityQueue {
 	return &PriorityQueue{
-		capacity:    capacity,
-		TaskQueues:  make([]*taskQueue, 0, capacity),
-		PriorityIdx: make(map[int]int, capacity),
-		noticeChan:  make(chan struct{}, capacity),
+		capacity:     capacity,
+		TaskQueues:   make([]*taskQueue, 0, capacity),
+		PriorityIdx:  make(map[int]int, capacity),
+		noticeChan:   make(chan struct{}, capacity),
+		HandledTasks: newHandleAllTasks(capacity),
 	}
 }
 
@@ -47,9 +64,6 @@ func (p *PriorityQueue) EnQueue(task *task.Task) (int, time.Duration, error) {
 		return -1, 0, util.ErrPriorityQueueFull
 	}
 
-	if idx > len(p.TaskQueues)-1 {
-		slog.Info("panic err", "idx", idx, "len", len(p.TaskQueues)-1, "ok", ok)
-	}
 	taskQueues := p.TaskQueues[idx]
 	taskQueues.Tasks.PushBack(task)
 
@@ -121,13 +135,10 @@ func (p *PriorityQueue) DeQueue() (*task.Task, error) {
 		}
 	}
 
-	for i, queue := range p.TaskQueues {
-		slog.Info("de queue", "i", i, "queue", queue)
-	}
-
 	return nil, util.ErrPriorityQueueEmpty
 }
 
+// Peek 取出当前优先级最高的任务
 func (p *PriorityQueue) Peek() (*task.Task, error) {
 	p.lock.RLock()
 	defer p.lock.RUnlock()

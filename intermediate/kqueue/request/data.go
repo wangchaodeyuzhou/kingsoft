@@ -20,13 +20,22 @@ type WorkerInfo struct {
 }
 
 type FIFOQueue struct {
-	Type  string       `json:"type"`
-	Tasks []*task.Task `json:"tasks"`
+	Type             string            `json:"type"`
+	Tasks            []*task.Task      `json:"tasks"`
+	OtherTasksStatus *OtherTasksStatus `json:"other_tasks_status"`
 }
 
 type PriorityQueue struct {
-	Type          string         `json:"type"`
-	PriorityTasks [][]*task.Task `json:"priority_tasks"`
+	Type             string            `json:"type"`
+	PriorityTasks    [][]*task.Task    `json:"priority_tasks"`
+	IdxPriority      map[int]int       `json:"idx_priority"`
+	OtherTasksStatus *OtherTasksStatus `json:"other_tasks_status"`
+}
+
+type OtherTasksStatus struct {
+	Success []*task.Task `json:"success"`
+	Failed  []*task.Task `json:"failed"`
+	Cancel  []*task.Task `json:"cancel"`
 }
 
 func convertTasks(q queue.Queue) (any, error) {
@@ -48,15 +57,35 @@ func convertTasks(q queue.Queue) (any, error) {
 			}
 			tmpData = append(tmpData, taskDatas)
 		}
+
 		result = &PriorityQueue{
-			Type:          "Priority",
-			PriorityTasks: tmpData,
+			Type:             "Priority",
+			PriorityTasks:    tmpData,
+			OtherTasksStatus: convertHandleTasks(priorityQueue.HandledTasks),
+			IdxPriority:      convertIdxPriority(priorityQueue.PriorityIdx),
 		}
+
 	default:
 		return result, errors.New("queue info type is not exist")
 	}
 
 	return result, nil
+}
+
+func convertIdxPriority(p map[int]int) map[int]int {
+	result := make(map[int]int, len(p))
+	for k, v := range p {
+		result[v] = k
+	}
+	return result
+}
+
+func convertHandleTasks(handleTasks *priority_queue.HandleAllTasks) *OtherTasksStatus {
+	return &OtherTasksStatus{
+		Success: handleTasks.Success,
+		Failed:  handleTasks.Failed,
+		Cancel:  handleTasks.Cancel,
+	}
 }
 
 func ConvertManagerData(m *manager.Manager) *ManagerData {

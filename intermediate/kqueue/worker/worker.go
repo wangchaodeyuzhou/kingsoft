@@ -69,23 +69,22 @@ func (w *Worker) startPriorityQueue() {
 		for {
 			select {
 			case <-q.NoticeQueue():
-				peek, err := q.Peek()
-				if err != nil || peek == nil {
-					slog.Debug("peek queue fail")
+				peek, err := q.DeQueue()
+				if err != nil {
+					// 处理失败
+					q.HandledTasks.Failed = append(q.HandledTasks.Failed, peek)
+					slog.Error("queue dequeue fail", "taskId", peek.TaskId)
 					continue
 				}
 
 				// 处理任务
 				w.processTask(peek)
 
-				t, err := q.DeQueue()
-				if err != nil {
-					slog.Error("queue dequeue fail", "taskId", t.TaskId)
-					continue
-				}
+				peek.UpdateStatus(util.Completed)
+				slog.Info("queue task have completed", "nodeId", w.WorkerId, "taskId", peek.TaskId, "status", peek.Status)
 
-				t.UpdateStatus(util.Completed)
-				slog.Info("queue task have completed", "nodeId", w.WorkerId, "taskId", t.TaskId, "status", t.Status)
+				// 处理成功
+				q.HandledTasks.Success = append(q.HandledTasks.Success, peek)
 			}
 		}
 	}()
@@ -94,7 +93,7 @@ func (w *Worker) startPriorityQueue() {
 // 处理任务(消费任务)
 func (w *Worker) processTask(task *task.Task) {
 	task.UpdateStatus(util.Processing)
-	time.Sleep(2 * time.Second) // 模拟处理过程
+	time.Sleep(1 * time.Second) // 模拟处理过程
 	slog.Info("handle you real task", "nodeId", w.WorkerId, "taskId", task.TaskId, "status", task.Status, "payload", task.Payload)
 }
 
