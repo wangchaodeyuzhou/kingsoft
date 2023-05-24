@@ -32,12 +32,12 @@ func NewWorkerManager() *Manager {
 	// load services to Workers
 	for workerType, workerNodes := range conf.GetConfigServices() {
 		for _, node := range workerNodes {
-			// todo 不同类型的队列表示
+			// todo 不同类型的队列表示 改写到配置表中
 			// fifo 队列
-			q := fifo_queue.NewFIFOQueue(util.MaxQueueCapacity)
+			// q := fifo_queue.NewFIFOQueue(util.MaxQueueCapacity)
 
 			// 优先级队列
-			// q := priority_queue.NewPriorityQueue(util.MaxQueueCapacity)
+			q := priority_queue.NewPriorityQueue(util.MaxQueueCapacity)
 			m.Workers[workerType] = append(m.Workers[workerType], worker.NewWorker(node.Id, q))
 		}
 

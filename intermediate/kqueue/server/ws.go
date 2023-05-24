@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"golang.org/x/exp/slog"
+	"net/http"
+	"os"
 	"time"
 )
 
@@ -54,6 +56,19 @@ func (ws *WebSocketServer) Start() {
 	})
 
 	router.Use(util.Cors())
+
+	{
+		cur, _ := os.Getwd()
+		slog.Info("get cur path", "path", cur)
+
+		router.StaticFS("/assets", http.Dir("./kqueue/dist/assets/"))
+		router.StaticFile("/favicon.ico", "./kqueue/dist/favicon.ico")
+		router.LoadHTMLFiles("./kqueue/dist/index.html")
+		router.GET("/", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "index.html", nil)
+		})
+	}
+
 	// 提交任务
 	router.POST("/commit", api.CommitTaskToQueue)
 	router.POST("/cancel", api.CancelTaskToQueue)
