@@ -2,6 +2,7 @@ package sliding_time_window
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -9,13 +10,14 @@ import (
 func TestSlidingWindow(t *testing.T) {
 	limiter := NewSliding(100*time.Millisecond, time.Second, 10)
 	for i := 0; i < 5; i++ {
-		fmt.Println(limiter.LimitTest())
+		assert.False(t, limiter.LimitTest())
 	}
 	time.Sleep(100 * time.Millisecond)
 	for i := 0; i < 5; i++ {
-		fmt.Println(limiter.LimitTest())
+		assert.False(t, limiter.LimitTest())
 	}
-	fmt.Println(limiter.LimitTest())
+	assert.True(t, limiter.LimitTest())
+
 	for _, v := range limiter.windows {
 		fmt.Println(v.timestamp, v.count)
 	}
@@ -23,7 +25,7 @@ func TestSlidingWindow(t *testing.T) {
 	fmt.Println("moments later...")
 	time.Sleep(time.Second)
 	for i := 0; i < 7; i++ {
-		fmt.Println(limiter.LimitTest())
+		assert.False(t, limiter.LimitTest())
 	}
 	for _, v := range limiter.windows {
 		fmt.Println(v.timestamp, v.count)
