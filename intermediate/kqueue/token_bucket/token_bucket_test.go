@@ -23,7 +23,7 @@ func TestTokenBucket(t *testing.T) {
 	for i := 0; i < concurrentRequests; i++ {
 		wg.Add(1)
 		go func() {
-			if tb.GetTake(1) {
+			if tb.GetTakeWithoutTimer(1) {
 				atomic.AddInt32(&taken, 1)
 			}
 			wg.Done()
@@ -53,7 +53,7 @@ func TestTokenBucket_Concurrency(t *testing.T) {
 	for i := 0; i < concurrentRequests; i++ {
 		wg.Add(1)
 		go func() {
-			if tb.GetTake(1) {
+			if tb.GetTakeWithoutTimer(1) {
 				atomic.AddInt32(&taken, 1)
 			}
 			wg.Done()
