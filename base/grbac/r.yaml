@@ -1,0 +1,71 @@
+# https://github.com/storyicon/grbac
+#Rule
+- id: 0
+  # Resource
+  host: "*"
+  path: "/delAuth"
+  method: "{DELETE}"
+  # Permission
+  authorized_roles:
+    - Root
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 1
+  # Resource
+  host: "*"
+  path: "/addAuth"
+  method: "{POST}"
+  # Permission
+  authorized_roles:
+    - Root
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 2
+  # Resource
+  host: "*"
+  path: "/getAdmins"
+  method: "{GET}"
+  # Permission
+  authorized_roles:
+    - Root
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 3
+  # Resource
+  host: "*"
+  path: "/historyPush"
+  method: "{POST}"
+  # Permission
+  authorized_roles:
+    - Root
+    - Admin
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 4
+  # Resource
+  host: "*"
+  path: "/delSquare"
+  method: "{DELETE}"
+  # Permission
+  authorized_roles:
+    - Root
+    - Admin
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 5
+  # Resource
+  host: "*"
+  path: "/getAuthGrant"
+  method: "{GET}"
+  # Permission
+  authorized_roles:
+    - Root
+    - Admin
+    - User
+  forbidden_roles: []
+  allow_anyone: false

@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ func helloTask(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("hello"))
 }
 
-func main() {
+func haveOne() {
 	startHttpServer()
 }
 
@@ -48,7 +48,7 @@ func startHttpServer() {
 func GetCurPath() (dir string, err error) {
 	path, err := exec.LookPath(os.Args[0])
 	if err != nil {
-		log.Println("%s, %s", os.Args[0], err)
+		fmt.Sprintf("%s, %s", os.Args[0], err)
 		return "", err
 	}
 

@@ -4,9 +4,7 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/advanced/find_path/NKGMobaBasedOnET" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/advanced/find_path/recast" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/advanced/find_path/recast.go" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/advanced/find_path/recastnavigation" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/advanced/游戏寻路算法/a_start/a-star-redblob" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/base/design_pattern/EasySJMS" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/framework/k6" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/framework/sentinel-golang" vcs="Git" />

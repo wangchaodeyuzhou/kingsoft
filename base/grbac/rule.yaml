@@ -1,0 +1,46 @@
+#Rule
+- id: 0
+  # Resource
+  host: "*"
+  path: "/delAuth"
+  method: "{DELETE,POST,PUT}"
+  # Permission
+  authorized_roles:
+    - Root
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 1
+  # Resource
+  host: "*"
+  path: "/addAuth"
+  method: "{DELETE,POST,PUT}"
+  # Permission
+  authorized_roles:
+    - Root
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 2
+  # Resource
+  host: "*"
+  path: "/historyPush"
+  method: "{DELETE,POST,PUT}"
+  # Permission
+  authorized_roles:
+    - Root
+    - Admin
+  forbidden_roles: []
+  allow_anyone: false
+
+- id: 3
+  # Resource
+  host: "*"
+  path: "/delSquare"
+  method: "{DELETE,POST,PUT}"
+  # Permission
+  authorized_roles:
+    - Root
+    - Admin
+  forbidden_roles: []
+  allow_anyone: false

@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"net/url"
 )
 
-func main() {
+func have() {
 	// get()
 	post()
 }

@@ -4,21 +4,21 @@ import "git.shiyou.kingsoft.com/go/log"
 
 type Option func(*Config)
 
-// When the config changes, this method f will be called.
+// When the configs changes, this method f will be called.
 func WithReloadFunc(f func(any)) Option {
 	return func(c *Config) {
 		watch(c, f)
 	}
 }
 
-// It is used to verify the correctness during config loading.
+// It is used to verify the correctness during configs loading.
 func WithVerifyFunc(f func(any) error) Option {
 	return func(c *Config) {
 		c.verifyFunc = f
 	}
 }
 
-// It is required that the data struct and the fields in the config file are strictly matched.
+// It is required that the data struct and the fields in the configs file are strictly matched.
 func WithExactDataStruct() Option {
 	return func(c *Config) {
 		c.exactDataStruct = true

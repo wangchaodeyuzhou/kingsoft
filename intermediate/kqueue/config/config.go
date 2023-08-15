@@ -28,7 +28,7 @@ type Config struct {
 	// Method for creating data structure.
 	newDataFunc func() any
 
-	// Struct instance used to store config data.
+	// Struct instance used to store configs data.
 	data any
 
 	// all keys in data struct
@@ -39,17 +39,17 @@ type Config struct {
 
 	md5 string
 
-	// It is required that the data struct and the fields in the config file are strictly matched.
+	// It is required that the data struct and the fields in the configs file are strictly matched.
 	exactDataStruct bool
 
 	checkMissingKey bool
 
-	// It is used to verify the correctness during config loading.
+	// It is used to verify the correctness during configs loading.
 	verifyFunc func(any) error
 }
 
 func New(path string, newDataFunc func() any, options ...Option) (*Config, error) {
-	slog.Debug("new config", "path", path)
+	slog.Debug("new configs", "path", path)
 
 	// check path
 	if path == "" {
@@ -60,10 +60,10 @@ func New(path string, newDataFunc func() any, options ...Option) (*Config, error
 		return nil, errors.New("no newDataFunc")
 	}
 
-	// config type
+	// configs type
 	str := strings.Split(path, ".")
 	if len(str) <= 1 {
-		return nil, errors.New("config type err")
+		return nil, errors.New("configs type err")
 	}
 	configType := str[len(str)-1]
 
@@ -114,7 +114,7 @@ func watch(c *Config, reloadFunc func(any)) {
 	watcher.OnConfigChange(func(event fsnotify.Event) {
 		slog.Info("OnConfigChange", "name", event.Name, "op", event.Op)
 		if err := c.read(); err != nil {
-			slog.Warn("config read err", "error", err)
+			slog.Warn("configs read err", "error", err)
 			if err == ErrRepeatedRead {
 				slog.Info("ErrRepeatedRead", "MD5", c.GetMD5())
 			}
@@ -150,12 +150,12 @@ func (c *Config) read() error {
 	newViper.SetEnvKeyReplacer(replacer)
 	newViper.AutomaticEnv()
 
-	// read config file
+	// read configs file
 	newViper.SetConfigFile(c.path)
 	newViper.SetConfigType(c.configType)
 	if err := newViper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return errors.New("config file not found")
+			return errors.New("configs file not found")
 		}
 		return err
 	}
@@ -226,7 +226,7 @@ func prefix(src string, allKeys []string) bool {
 func (c *Config) checkMissingKeys(viper *viper.Viper) error {
 	missingKeys := ""
 
-	// check config context missing-keys
+	// check configs context missing-keys
 	for _, k := range viper.AllKeys() {
 		if viper.IsSet(k) {
 			continue
@@ -317,7 +317,7 @@ func convertMap(src any) any {
 		}
 		return dst
 	case []byte:
-		// there will be no binary data in the config data
+		// there will be no binary data in the configs data
 		return string(m)
 	default:
 		return src

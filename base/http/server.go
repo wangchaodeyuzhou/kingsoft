@@ -1,4 +1,4 @@
-package main
+package http
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("hello"))
 }
 
-func main() {
+func mainK() {
 	http.HandleFunc("/hello", hello)
 
 	http.ListenAndServe("127.0.0.1:7000", nil)
