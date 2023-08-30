@@ -69,3 +69,10 @@ func getTime(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "time are valid!"})
 }
+
+func TestRegisterPageData(t *testing.T) {
+	validateMy = validator.New()
+	r := gin.Default()
+	r.POST("/page", registerPageData)
+	r.Run(":9999")
+}

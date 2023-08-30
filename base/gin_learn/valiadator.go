@@ -58,3 +58,28 @@ func registerHandler(c *gin.Context) {
 		return
 	}
 }
+
+type RegisterPageData struct {
+	Page     int `json:"age" validate:"gte=1,lte=10"`
+	PageSize int `json:"pageSize" validate:"min=10,max=30"`
+}
+
+func registerPageData(c *gin.Context) {
+	data := RegisterPageData{}
+	if err := c.ShouldBindJSON(&data); err != nil {
+		fmt.Println("should bind json", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	fmt.Println(data.Page, data.PageSize)
+	if err := validateMy.Struct(data); err != nil {
+		fmt.Println("err : ", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+}
