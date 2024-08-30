@@ -1,5 +1,6 @@
 package trie
 
+// NodeTrie 前缀树
 type NodeTrie struct {
 	children map[rune]*NodeTrie
 	isWord   bool
