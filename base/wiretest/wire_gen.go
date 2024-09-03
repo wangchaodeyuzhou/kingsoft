@@ -4,12 +4,12 @@
 //go:build !wireinject
 // +build !wireinject
 
-package wire
+package wiretest
 
-// Injectors from wiretest.go:
+// Injectors from wire_initialize.go:
 
-func InitializeEvent(msg string) Event {
-	message := NewMessage(msg)
+func InitializeEvent() Event {
+	message := NewMessage()
 	greeter := NewGreeter(message)
 	event := NewEvent(greeter)
 	return event
